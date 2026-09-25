@@ -1,0 +1,28 @@
+[project]
+name = "quantum-safe-messenger"
+version = "0.1.0"
+description = "End-to-End Encrypted Messaging Relay using Post-Quantum ML-KEM and ML-DSA"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.141.1",
+    "uvicorn>=0.54.0",
+    "sqlalchemy>=2.1.1",
+    "psycopg[binary]>=3.3.6",
+    "pydantic>=2.13.5",
+    "cryptography>=50.0.1",
+    # my own modules
+    "kyber-kem",
+    "dilithium-dsa",
+]
+
+[tool.uv.sources]
+kyber-kem = { git = "https://github.com/tomciolowsky/Kyber-KEM.git" }
+dilithium-dsa = { git = "https://github.com/tomciolowsky/Dilithium-DSA.git" }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "httpx>=0.28.1",
+    "ruff>=0.16.9",
+]
