@@ -20,6 +20,10 @@ dependencies = [
 kyber-kem = { git = "https://github.com/tomciolowsky/Kyber-KEM.git" }
 dilithium-dsa = { git = "https://github.com/tomciolowsky/Dilithium-DSA.git" }
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
