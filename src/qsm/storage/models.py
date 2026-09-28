@@ -1,8 +1,8 @@
 from .database import Base
 from datetime import datetime, timezone
 from typing import List
-from enum import Enum
-from sqlalchemy import ForeignKey, Integer, String, DateTime, Text
+from enum import Enum as PyEnum
+from sqlalchemy import ForeignKey, Integer, String, DateTime, Text, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
@@ -13,7 +13,7 @@ def get_current_time() -> datetime:
     return datetime.now(timezone.utc)
 
 
-class MessageStatus(Enum):
+class MessageStatus(str, PyEnum):
     """
     Enum representing the status of an encrypted message.
     """
@@ -78,7 +78,7 @@ class EncryptedMessage(Base):
     encrypted_payload: Mapped[str] = mapped_column(Text, nullable=False)
     signature: Mapped[str] = mapped_column(Text, nullable=False)
 
-    status: Mapped[MessageStatus] = mapped_column(Enum(MessageStatus), default=MessageStatus.PENDING.value, index=True, nullable=False)
+    status: Mapped[MessageStatus] = mapped_column(Enum(MessageStatus), default=MessageStatus.PENDING, index=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=get_current_time, nullable=False)
 
     # relations
