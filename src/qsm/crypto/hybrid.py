@@ -28,8 +28,8 @@ class HybridParty:
     Sends and receives packets securely using a combination of KEM, AESGCM and DSA.
     """
     def __init__(self,
-                 kem_params=ML_KEM_768,
-                 dsa_params=ML_DSA_65,
+                 kem_params="ML_KEM_768",
+                 dsa_params="ML_DSA_65",
                  context: bytes = b""):
         
         self.kem = CommunicationPartyKEM(kem_params)
