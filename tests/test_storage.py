@@ -112,8 +112,6 @@ def test_encrypted_message_flow(create_test_session):
     )
     result = db.scalars(stmt).all()
 
-    print("result:", result)
-
     assert len(result) == 1
     assert result[0].sender.username == "alice" 
     assert result[0].encrypted_payload == test_package_dict['encrypted_payload']
