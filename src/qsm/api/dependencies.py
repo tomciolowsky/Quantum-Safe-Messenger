@@ -1,6 +1,7 @@
 from typing import Annotated
 from fastapi import Depends, HTTPException, Header, status
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from qsm.storage import User, get_db
 
 
@@ -15,7 +16,7 @@ def get_current_user(
     Dependency to retrieve the current user based on the provided 'X-Username' header.
     Raises an HTTPException if the user is not found.
     """
-    user_stmt = db.select(User).where(User.username == x_username_header)
+    user_stmt = select(User).where(User.username == x_username_header)
     user = db.scalars(user_stmt).first()
     if not user:
         raise HTTPException(

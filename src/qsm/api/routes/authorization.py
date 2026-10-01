@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status
 from qsm.api.dependencies import DBSession
 from qsm.api.schemas import PublicKeyResponseSchema, UserResponseSchema, UserRegistrationRequestSchema
 from qsm.storage import User, UserPublicKey
+from sqlalchemy import select
 
 router = APIRouter(
     prefix="/users",
@@ -17,7 +18,7 @@ def register_user(payload: UserRegistrationRequestSchema, db: DBSession):
     """
     Endpoint to register a new user and store their public ML-KEM and ML-DSA keys .
     """
-    existing_user_stmt = db.select(User).where(User.username == payload.username)
+    existing_user_stmt = select(User).where(User.username == payload.username)
     existing_user = db.scalars(existing_user_stmt).first()
     if existing_user:
         raise HTTPException(
@@ -52,7 +53,7 @@ def get_user_public_keys(username: str, db: DBSession):
     """
     Endpoint to retrieve a user's public keys by their username.
     """
-    user_stmt = db.select(User).where(User.username == username)
+    user_stmt = select(User).where(User.username == username)
     user = db.scalars(user_stmt).first()
     if not user:
         raise HTTPException(
@@ -60,7 +61,7 @@ def get_user_public_keys(username: str, db: DBSession):
             detail="User '{username}' not found."
         )
 
-    public_key_stmt = db.select(UserPublicKey).where(UserPublicKey.user_id == user.id)
+    public_key_stmt = select(UserPublicKey).where(UserPublicKey.user_id == user.id)
     public_key = db.scalars(public_key_stmt).first()
     if not public_key:
         raise HTTPException(
