@@ -20,6 +20,13 @@ dependencies = [
 kyber-kem = { git = "https://github.com/tomciolowsky/Kyber-KEM.git" }
 dilithium-dsa = { git = "https://github.com/tomciolowsky/Dilithium-DSA.git" }
 
+[build-system]
+requires = ["uv_build<0.13"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "qsm"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]

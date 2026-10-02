@@ -445,7 +445,7 @@ wheels = [
 [[package]]
 name = "quantum-safe-messenger"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
     { name = "dilithium-dsa" },
