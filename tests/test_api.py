@@ -132,3 +132,36 @@ def test_full_qsm_lifecycle(client):
     )
 
     assert acknowledge_response.status_code == status.HTTP_200_OK
+
+
+def test_health_check_endpoint(client):
+    """
+    Test the /health/info endpoint to ensure it returns a valid response.
+    """
+    response = client.get("/health/info")
+    assert response.status_code == status.HTTP_200_OK
+
+    data = response.json()
+    assert data["status"] == "healthy"
+    assert data["service"] == "Quantum-Safe Messenger API"
+    assert "supported_standards" in data
+
+def test_benchmark_endpoint(client):
+    """
+    Test the /health/benchmark endpoint to ensure it returns a valid response.
+    """
+    response = client.get("/health/benchmark")
+    assert response.status_code == status.HTTP_200_OK
+
+    data = response.json()
+    results = data.get("results", [])
+    
+    operations = [result["operation"] for result in results]
+    expected_operations = [
+        "Key Pair Generation (KEM + DSA)",
+        "Package Encryption (KEM encapsulation + AES encryption + DSA signing)",
+        "Package Decryption (KEM decapsulation + AES decryption + DSA verification)"
+    ]
+    assert len(operations) == len(expected_operations)
+    for expected_operation in expected_operations:
+        assert expected_operation in operations
