@@ -63,3 +63,19 @@ class MessageResponseSchema(BaseModel):
     package: EncryptedPackageSchema
     status: str
     created_at: datetime
+
+
+class BenchmarkResultSchema(BaseModel):
+    """
+    Schema for the result of a cryptographic benchmark.
+    """
+    algorithm: str
+    operation: str
+    duration_ms: float
+
+
+class BenchmarkResponseSchema(BaseModel):
+    """
+    Response schema for the list of benchmark results.
+    """
+    results: List[BenchmarkResultSchema]
