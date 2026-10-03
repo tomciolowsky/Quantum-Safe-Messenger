@@ -1,10 +1,14 @@
-from typing import List
+
 from fastapi import APIRouter, HTTPException, status
-from qsm.api.schemas import EncryptedPackageSchema, MessageResponseSchema, SendMessageRequestSchema
-from qsm.api.dependencies import DBSession, CurrentUser
-from qsm.storage import User, EncryptedMessage, MessageStatus
 from sqlalchemy import select
 
+from qsm.api.dependencies import CurrentUser, DBSession
+from qsm.api.schemas import (
+    EncryptedPackageSchema,
+    MessageResponseSchema,
+    SendMessageRequestSchema,
+)
+from qsm.storage import EncryptedMessage, MessageStatus, User
 
 router = APIRouter(
     prefix="/messages",
@@ -62,7 +66,7 @@ def send_message(
 
 
 @router.get("/inbox",
-            response_model=List[MessageResponseSchema],
+            response_model=list[MessageResponseSchema],
             status_code=status.HTTP_200_OK,
             summary="Retrieve received messages",
             description="Retrieves all messages received (status = PENDING) by the current user.")

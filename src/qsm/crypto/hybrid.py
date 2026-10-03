@@ -1,8 +1,10 @@
-from dataclasses import dataclass
 import os
-from kyber import CommunicationPartyKEM, ML_KEM_768
-from dilithium import CommunicationPartyDSA, ML_DSA_65
+from dataclasses import dataclass
+
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from dilithium import CommunicationPartyDSA
+from kyber import CommunicationPartyKEM
+
 
 @dataclass(frozen=True)
 class KeyPair:

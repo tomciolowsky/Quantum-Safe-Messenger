@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, Field, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class EncryptedPackageSchema(BaseModel):
@@ -20,7 +20,7 @@ class UserRegistrationRequestSchema(BaseModel):
     username: str = Field(..., min_length=3, max_length=32, pattern="^[a-zA-Z0-9_-]+$", description="The username of the user.")
     kem_public_key: str = Field(..., description="The ML-KEM public key in upperhex format.")
     dsa_public_key: str = Field(..., description="The ML-DSA public key in upperhex format.")
-    algorithm_info: Optional[str] = "ML_KEM_768 + ML_DSA_65"
+    algorithm_info: str | None = "ML_KEM_768 + ML_DSA_65"
 
 
 class UserResponseSchema(BaseModel):
@@ -78,4 +78,4 @@ class BenchmarkResponseSchema(BaseModel):
     """
     Response schema for the list of benchmark results.
     """
-    results: List[BenchmarkResultSchema]
+    results: list[BenchmarkResultSchema]

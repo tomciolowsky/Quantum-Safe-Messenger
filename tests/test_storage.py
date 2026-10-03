@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
 from qsm.crypto import HybridParty, bytes_to_upperhex, package_to_dict
-from qsm.storage import Base, User, UserPublicKey, EncryptedMessage, MessageStatus
+from qsm.storage import Base, EncryptedMessage, MessageStatus, User, UserPublicKey
 
 
 @pytest.fixture

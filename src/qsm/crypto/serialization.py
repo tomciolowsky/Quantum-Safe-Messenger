@@ -1,5 +1,6 @@
+
 from .hybrid import EncryptedPackage
-from typing import Dict
+
 
 def bytes_to_upperhex(data: bytes) -> str:
     """
@@ -24,7 +25,7 @@ def package_to_dict(package: EncryptedPackage) -> dict:
         "signature": bytes_to_upperhex(package.signature)
     }
 
-def dict_to_package(data: Dict[str, str]) -> EncryptedPackage:
+def dict_to_package(data: dict[str, str]) -> EncryptedPackage:
     """
     Converts a dictionary with uppercase hexadecimal strings to an EncryptedPackage.
     """

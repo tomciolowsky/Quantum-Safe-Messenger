@@ -1,5 +1,7 @@
 import time
+
 from fastapi import APIRouter, status
+
 from qsm.api.schemas import BenchmarkResponseSchema, BenchmarkResultSchema
 from qsm.crypto import HybridParty
 
@@ -69,6 +71,6 @@ def run_benchmark():
         "sender_dsa_pk": keys.dsa.public_key,
         "package": package
     }
-    decrypted_plaintext = benchmark_method(hybrid.decrypt_package, "Package Decryption (KEM decapsulation + AES decryption + DSA verification)", **decrypt_kwargs)
+    benchmark_method(hybrid.decrypt_package, "Package Decryption (KEM decapsulation + AES decryption + DSA verification)", **decrypt_kwargs)
     
     return BenchmarkResponseSchema(results=benchmark_results)

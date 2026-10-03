@@ -1,8 +1,9 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
+from qsm.api.routes import authorization_router, health_router, messages_router
 from qsm.storage import init_db
-from qsm.api.routes import authorization_router, messages_router, health_router
 
 
 @asynccontextmanager

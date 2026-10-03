@@ -1,9 +1,10 @@
 from typing import Annotated
-from fastapi import Depends, HTTPException, Header, status
-from sqlalchemy.orm import Session
-from sqlalchemy import select
-from qsm.storage import User, get_db
 
+from fastapi import Depends, Header, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from qsm.storage import User, get_db
 
 DBSession = Annotated[Session, Depends(get_db)]
 

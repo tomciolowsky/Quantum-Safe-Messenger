@@ -1,10 +1,6 @@
 import pytest
-from qsm.crypto import (
-    HybridParty, 
-    EncryptedPackage,
-    package_to_dict,
-    dict_to_package
-)
+
+from qsm.crypto import EncryptedPackage, HybridParty, dict_to_package, package_to_dict
 
 
 def test_hybrid_encryption_decryption():

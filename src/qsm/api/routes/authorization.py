@@ -1,8 +1,13 @@
 from fastapi import APIRouter, HTTPException, status
-from qsm.api.dependencies import DBSession
-from qsm.api.schemas import PublicKeyResponseSchema, UserResponseSchema, UserRegistrationRequestSchema
-from qsm.storage import User, UserPublicKey
 from sqlalchemy import select
+
+from qsm.api.dependencies import DBSession
+from qsm.api.schemas import (
+    PublicKeyResponseSchema,
+    UserRegistrationRequestSchema,
+    UserResponseSchema,
+)
+from qsm.storage import User, UserPublicKey
 
 router = APIRouter(
     prefix="/users",
