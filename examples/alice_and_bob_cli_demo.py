@@ -1,5 +1,6 @@
 import sys
 import time
+
 import httpx2
 
 from qsm.crypto import (
@@ -21,8 +22,8 @@ def log_demo_step(step_number: int, title: str, details: str = ""):
 
 def run_demo():
     print(f"\n{'=' * 105}")
-    print(f"\n    QUANTUM-SAFE MESSENGER (QSM) - POST-QUANTUM RELAY DEMO")
-    print(f"\n    Standards: FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), AES-256-GCM")
+    print("\n    QUANTUM-SAFE MESSENGER (QSM) - POST-QUANTUM RELAY DEMO")
+    print("\n    Standards: FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), AES-256-GCM")
     print(f"\n{'=' * 105}\n")
 
     try:
@@ -30,10 +31,10 @@ def run_demo():
         response.raise_for_status()
         print(f"[+] Connected to QSM API at: {API_URL}")
         print(f"    Server status: {response.json().get('status')}")
-    except Exception as e:
+    except httpx2.HTTPError as e:
         print(f"[!] Failed to connect to QSM API at: {API_URL}")
         print(f"    Error: {e}")
-        print(f"    Use: 'uvicorn qsm.api.main:app --reload' OR 'docker compose up'")
+        print("    Use: 'uvicorn qsm.api.main:app --reload' OR 'docker compose up'")
         sys.exit(1)
 
     hybrid = HybridParty()
@@ -45,11 +46,11 @@ def run_demo():
     alice_keys = hybrid.generate_keys()
     bob_keys = hybrid.generate_keys()
 
-    print(f"[Alice] Generated ML-KEM-768 and ML-DSA-65 Key Pair")
+    print("[Alice] Generated ML-KEM-768 and ML-DSA-65 Key Pair")
     print(f"[Alice] ML-KEM-768 Public Key Length: {len(alice_keys.kem.public_key)} Bytes")
     print(f"[Alice] ML-DSA-65 Public Key Length: {len(alice_keys.dsa.public_key)} Bytes")
 
-    print(f"[Bob] Generated ML-KEM-768 and ML-DSA-65 Key Pair")
+    print("[Bob] Generated ML-KEM-768 and ML-DSA-65 Key Pair")
     print(f"[Bob] ML-KEM-768 Public Key Length: {len(bob_keys.kem.public_key)} Bytes")
     print(f"[Bob] ML-DSA-65 Public Key Length: {len(bob_keys.dsa.public_key)} Bytes")
 
@@ -90,14 +91,14 @@ def run_demo():
             sender_dsa_sk=alice_keys.dsa.secret_key,
             plaintext=secret_message
         )
-        print(f"[Alice] 1. KEM Encapsulation: Generated a *shared secret* and *KEM ciphertext* using Bob's public KEM key.")
-        print(f"[Alice] 2. AES-GCM Encryption: Encrypted the secret message with AES-GCM using *shared secret* and random *nonce*.")
-        print(f"[Alice] 3. DSA Signature: Signed the package (*KEM ciphertext* + *nonce* + *encrypted message*) with Alice's private DSA key.")
+        print("[Alice] 1. KEM Encapsulation: Generated a *shared secret* and *KEM ciphertext* using Bob's public KEM key.")
+        print("[Alice] 2. AES-GCM Encryption: Encrypted the secret message with AES-GCM using *shared secret* and random *nonce*.")
+        print("[Alice] 3. DSA Signature: Signed the package (*KEM ciphertext* + *nonce* + *encrypted message*) with Alice's private DSA key.")
 
         log_demo_step(4, "MESSAGE SENDING", "Server only sees the encrypted package - meaningless upper-hex encoded bytes.")
         package_dict = package_to_dict(package)
         send_message_response = client.post(
-            f"/messages/send",
+            "/messages/send",
             headers={"X-Username-Header": alice_username},
             json={
                 "receiver_username": bob_username,
@@ -111,7 +112,7 @@ def run_demo():
 
         log_demo_step(5, "MESSAGE RETRIEVAL", "Server only sees the encrypted package - meaningless upper-hex encoded bytes.")
         inbox_response = client.get(
-            f"/messages/inbox",
+            "/messages/inbox",
             headers={"X-Username-Header": bob_username}
         )
         inbox_response_data = inbox_response.json()
@@ -134,9 +135,9 @@ def run_demo():
             sender_dsa_pk=upperhex_to_bytes(alice_keys_response_data["dsa_public_key"]),
             package=received_package
         )
-        print(f"[Bob] 1. DSA Signature: Verified the signature with Alice's public DSA key.")
-        print(f"[Bob] 2. KEM Decapsulation: Retrieved the *shared secret* using Bob's private KEM key.")
-        print(f"[Bob] 3. AES-GCM Encryption: Decrypted the secret message with AES-GCM using *shared secret* and *nonce*.")
+        print("[Bob] 1. DSA Signature: Verified the signature with Alice's public DSA key.")
+        print("[Bob] 2. KEM Decapsulation: Retrieved the *shared secret* using Bob's private KEM key.")
+        print("[Bob] 3. AES-GCM Encryption: Decrypted the secret message with AES-GCM using *shared secret* and *nonce*.")
 
         print(f"[Bob] Decrypted Message: '{decrypted_message.decode()}'")
 
@@ -148,7 +149,7 @@ def run_demo():
         print(f"[Bob] Acknowledged the message with ID: {message_id} - status changed to READ.")
 
     print(f"\n{'#' * 105}")
-    print(f"DEMO COMPLETED SUCCESSFULLY!")
+    print("DEMO COMPLETED SUCCESSFULLY!")
     print(f"{'#' * 105}\n")
 
 if __name__ == "__main__":
