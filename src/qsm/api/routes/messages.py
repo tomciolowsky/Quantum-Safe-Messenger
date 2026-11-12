@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -78,9 +80,9 @@ async def send_message(
 async def get_inbox(
     current_user: CurrentUser,
     db: DBSession,
-    message_status: MessageStatus = Query(MessageStatus.PENDING, alias="status"),
-    limit: int = Query(50, ge=1, le=200),
-    offset: int = Query(0, ge=0),
+    message_status: Annotated[MessageStatus, Query(alias="status")] = MessageStatus.PENDING,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ):
     """
     Endpoint to retrieve messages received by the current user with the requested status.
