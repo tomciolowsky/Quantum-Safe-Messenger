@@ -172,7 +172,7 @@ wheels = [
 [[package]]
 name = "dilithium-dsa"
 version = "0.1.0"
-source = { git = "https://github.com/tomciolowsky/Dilithium-DSA.git#170710a435919e1c3853277697a39450ccc16dfa" }
+source = { git = "https://github.com/tomciolowsky/Dilithium-DSA.git#7cb8287b31b9a32ccc2c88e82204af76389604eb" }
 
 [[package]]
 name = "fastapi"
@@ -305,7 +305,7 @@ wheels = [
 [[package]]
 name = "kyber-kem"
 version = "0.1.0"
-source = { git = "https://github.com/tomciolowsky/Kyber-KEM.git#074e2c54c42602061a2482720b8dd30703453497" }
+source = { git = "https://github.com/tomciolowsky/Kyber-KEM.git#cfc2386462dfc093f78de1fc1e803d457fd538e5" }
 
 [[package]]
 name = "packaging"
