@@ -1,6 +1,6 @@
-
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from qsm.api.dependencies import CurrentUser, DBSession
 from qsm.api.schemas import (
@@ -15,31 +15,34 @@ router = APIRouter(
     tags=["Messages"],
 )
 
-@router.post("/send",
-             response_model=MessageResponseSchema,
-             status_code=status.HTTP_201_CREATED,
-             summary="Send an encrypted message",
-             description="Sends an encrypted message to the specified receiver.")
-def send_message(
+
+@router.post(
+    "/send",
+    response_model=MessageResponseSchema,
+    status_code=status.HTTP_201_CREATED,
+    summary="Send an encrypted message",
+    description="Sends an encrypted message to the specified receiver.",
+)
+async def send_message(
     payload: SendMessageRequestSchema,
     sender: CurrentUser,
-    db: DBSession
+    db: DBSession,
 ):
     """
     Endpoint to send an encrypted message to a specified receiver.
     """
-    receicer_stmt = select(User).where(User.username == payload.receiver_username)
-    receiver = db.scalars(receicer_stmt).first()
+    receiver_stmt = select(User).where(User.username == payload.receiver_username)
+    receiver = (await db.scalars(receiver_stmt)).first()
     if not receiver:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Receiver '{payload.receiver_username}' not found."
+            detail=f"Receiver '{payload.receiver_username}' not found.",
         )
 
     if receiver.id == sender.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Sender and receiver cannot be the same user."
+            detail="Sender and receiver cannot be the same user.",
         )
 
     db_message = EncryptedMessage(
@@ -49,11 +52,11 @@ def send_message(
         nonce=payload.package.nonce,
         encrypted_payload=payload.package.encrypted_payload,
         signature=payload.package.signature,
-        status=MessageStatus.PENDING
+        status=MessageStatus.PENDING,
     )
     db.add(db_message)
-    db.commit()
-    db.refresh(db_message)
+    await db.commit()
+    await db.refresh(db_message)
 
     return MessageResponseSchema(
         id=db_message.id,
@@ -61,28 +64,40 @@ def send_message(
         receiver_username=receiver.username,
         package=payload.package,
         status=db_message.status.value,
-        created_at=db_message.created_at
+        created_at=db_message.created_at,
     )
 
 
-@router.get("/inbox",
-            response_model=list[MessageResponseSchema],
-            status_code=status.HTTP_200_OK,
-            summary="Retrieve received messages",
-            description="Retrieves all messages received (status = PENDING) by the current user.")
-def get_inbox(
+@router.get(
+    "/inbox",
+    response_model=list[MessageResponseSchema],
+    status_code=status.HTTP_200_OK,
+    summary="Retrieve received messages",
+    description="Retrieves received messages filtered by status (defaults to PENDING, transitioning them to DELIVERED).",
+)
+async def get_inbox(
     current_user: CurrentUser,
-    db: DBSession
+    db: DBSession,
+    message_status: MessageStatus = Query(MessageStatus.PENDING, alias="status"),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
 ):
     """
-    Endpoint to retrieve all messages received by the current user with status PENDING. 
-    After retrieving them, automatically change their status to DELIVERED.
+    Endpoint to retrieve messages received by the current user with the requested status.
+    PENDING messages automatically transition to DELIVERED upon retrieval.
     """
-    messages_stmt = select(EncryptedMessage).where(
-        EncryptedMessage.receiver_id == current_user.id,
-        EncryptedMessage.status == MessageStatus.PENDING
-    ).order_by(EncryptedMessage.created_at.asc())
-    messages = db.scalars(messages_stmt).all()
+    messages_stmt = (
+        select(EncryptedMessage)
+        .options(selectinload(EncryptedMessage.sender))
+        .where(
+            EncryptedMessage.receiver_id == current_user.id,
+            EncryptedMessage.status == message_status,
+        )
+        .order_by(EncryptedMessage.created_at.asc())
+        .limit(limit)
+        .offset(offset)
+    )
+    messages = (await db.scalars(messages_stmt)).all()
 
     response_messages = []
     for msg in messages:
@@ -95,48 +110,52 @@ def get_inbox(
                     kem_ciphertext=msg.kem_ciphertext,
                     nonce=msg.nonce,
                     encrypted_payload=msg.encrypted_payload,
-                    signature=msg.signature
+                    signature=msg.signature,
                 ),
                 status=msg.status.value,
-                created_at=msg.created_at
+                created_at=msg.created_at,
             )
         )
-        msg.status = MessageStatus.DELIVERED
+        if msg.status == MessageStatus.PENDING:
+            msg.status = MessageStatus.DELIVERED
 
-    db.commit()
+    if message_status == MessageStatus.PENDING and messages:
+        await db.commit()
     return response_messages
 
 
-@router.post("/{message_id}/acknowledge",
-                status_code=status.HTTP_200_OK,
-                summary="Acknowledge a received message",
-                description="Acknowledges a received message by changing its status to READ.")
-def acknowledge_message(
+@router.post(
+    "/{message_id}/acknowledge",
+    status_code=status.HTTP_200_OK,
+    summary="Acknowledge a received message",
+    description="Acknowledges a received message by changing its status to READ.",
+)
+async def acknowledge_message(
     message_id: int,
     current_user: CurrentUser,
-    db: DBSession
+    db: DBSession,
 ):
     """
     Endpoint to acknowledge a received message by changing its status to READ.
     """
     message_stmt = select(EncryptedMessage).where(
         EncryptedMessage.id == message_id,
-        EncryptedMessage.receiver_id == current_user.id
+        EncryptedMessage.receiver_id == current_user.id,
     )
-    message = db.scalars(message_stmt).first()
+    message = (await db.scalars(message_stmt)).first()
 
     if not message:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Message with ID '{message_id}' not found for the current user."
+            detail=f"Message with ID '{message_id}' not found for the current user.",
         )
 
     if message.status != MessageStatus.DELIVERED:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only messages with status DELIVERED can be acknowledged."
+            detail="Only messages with status DELIVERED can be acknowledged.",
         )
 
     message.status = MessageStatus.READ
-    db.commit()
+    await db.commit()
     return {"message": f"Message with ID '{message_id}' acknowledged as READ."}
