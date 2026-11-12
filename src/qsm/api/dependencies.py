@@ -2,27 +2,27 @@ from typing import Annotated
 
 from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from qsm.storage import User, get_db
 
-DBSession = Annotated[Session, Depends(get_db)]
+DBSession = Annotated[AsyncSession, Depends(get_db)]
 
 
-def get_current_user(
-        x_username_header: Annotated[str, Header(description="The username of the current user")],
-        db: DBSession 
+async def get_current_user(
+    x_username_header: Annotated[str, Header(description="The username of the current user")],
+    db: DBSession,
 ) -> User:
     """
-    Dependency to retrieve the current user based on the provided 'X-Username' header.
+    Dependency to retrieve the current user based on the provided 'X-Username-Header' header.
     Raises an HTTPException if the user is not found.
     """
     user_stmt = select(User).where(User.username == x_username_header)
-    user = db.scalars(user_stmt).first()
+    user = (await db.scalars(user_stmt)).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User '{x_username_header}' not found."
+            detail=f"User '{x_username_header}' not found.",
         )
     return user
 
