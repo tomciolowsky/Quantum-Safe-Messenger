@@ -93,3 +93,7 @@ uv run python examples/alice_and_bob_cli_demo.py
 uv run pytest -v
 uv run ruff check .
 ```
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
