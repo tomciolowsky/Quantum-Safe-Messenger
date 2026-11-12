@@ -32,7 +32,7 @@ class HybridParty:
     def __init__(self,
                  kem_params="ML_KEM_768",
                  dsa_params="ML_DSA_65",
-                 context: bytes = b""):
+                 context: bytes = b"qsm-v1"):
         
         self.kem = CommunicationPartyKEM(kem_params)
         self.dsa = CommunicationPartyDSA(dsa_params)
@@ -64,7 +64,7 @@ class HybridParty:
 
         aesgcm = AESGCM(shared_secret)
         nonce = os.urandom(12)
-        aesgcm_encrypted_payload = aesgcm.encrypt(nonce, plaintext, None)
+        aesgcm_encrypted_payload = aesgcm.encrypt(nonce, plaintext, kem_ciphertext + nonce)
 
         data_to_sign = kem_ciphertext + nonce + aesgcm_encrypted_payload
 
@@ -97,6 +97,6 @@ class HybridParty:
         shared_secret = self.kem.decapsulate(receiver_kem_sk, package.kem_ciphertext)
 
         aesgcm = AESGCM(shared_secret)
-        plaintext = aesgcm.decrypt(package.nonce, package.encrypted_payload, None)
+        plaintext = aesgcm.decrypt(package.nonce, package.encrypted_payload, package.kem_ciphertext + package.nonce)
         
         return plaintext

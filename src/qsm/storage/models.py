@@ -83,8 +83,8 @@ class EncryptedMessage(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=get_current_time, nullable=False)
 
     # relations
-    sender: Mapped[User] = relationship(foreign_keys=[sender_id], back_populates="")
-    receiver: Mapped[User] = relationship(foreign_keys=[receiver_id], back_populates="")
+    sender: Mapped[User] = relationship(foreign_keys=[sender_id], back_populates="sent_messages")
+    receiver: Mapped[User] = relationship(foreign_keys=[receiver_id], back_populates="received_messages")
 
     def __repr__(self) -> str:
         return f"<EncryptedMessage(id={self.id}, from={self.sender_id}, to={self.receiver_id}, created_at='{self.created_at}')>"

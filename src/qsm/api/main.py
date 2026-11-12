@@ -11,7 +11,7 @@ async def lifespan(app: FastAPI):
     """
     Initialize the database when the application starts.
     """
-    init_db()
+    await init_db()
     yield
 
 

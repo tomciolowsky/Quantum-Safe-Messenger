@@ -1,22 +1,34 @@
 import os
+from collections.abc import AsyncGenerator
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./qsm.db")
+
+def _to_async_url(url: str) -> str:
+    if url.startswith("sqlite:///"):
+        return url.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
+    if url.startswith("sqlite://"):
+        return url.replace("sqlite://", "sqlite+aiosqlite://", 1)
+    return url
+
+
+DATABASE_URL = _to_async_url(os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./qsm.db"))
 
 connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
 
-engine = create_engine(
+engine = create_async_engine(
     DATABASE_URL,
     connect_args=connect_args,
-    echo=False
+    echo=False,
 )
 
-SessionLocal = sessionmaker(
+AsyncSessionLocal = async_sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
     autocommit=False,
     autoflush=False,
-    bind=engine
+    expire_on_commit=False,
 )
 
 
@@ -24,20 +36,17 @@ class Base(DeclarativeBase):
     pass
 
 
-def get_db():
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
-    Generates a database session. 
-    Safely closes the session after use.
+    Generates an async database session and safely closes it after use.
     """
-    db = SessionLocal()
-    try:
+    async with AsyncSessionLocal() as db:
         yield db
-    finally:
-        db.close()
 
 
-def init_db(target_engine=engine) -> None:
+async def init_db(target_engine=engine) -> None:
     """
-    Initializes the database with all tables
+    Initializes the database with all tables.
     """
-    Base.metadata.create_all(bind=target_engine)
+    async with target_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
